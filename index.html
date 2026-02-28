@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ultimate Notice Generator | SLC</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            /* 🏆 Theme: ANNOUNCEMENT (Gold) */
+            --theme-primary: #fbbf24;
+            --theme-secondary: #f59e0b;
+            --theme-glow: rgba(245, 158, 11, 0.4);
+            --theme-bg-ambient: rgba(120, 53, 15, 0.3);
+            --theme-text: #fde047;
+            --theme-border: rgba(251, 191, 36, 0.4);
+        }
+
+        /* 🌐 Theme: NEWS (Cyan) */[data-theme="News"] {
+            --theme-primary: #06b6d4;
+            --theme-secondary: #0ea5e9;
+            --theme-glow: rgba(6, 182, 212, 0.4);
+            --theme-bg-ambient: rgba(8, 51, 68, 0.4);
+            --theme-text: #67e8f9;
+            --theme-border: rgba(6, 182, 212, 0.4);
+        }
+
+        /* ⚠️ Theme: ALERT (Crimson) */
+        [data-theme="Alert"] {
+            --theme-primary: #ef4444;
+            --theme-secondary: #dc2626;
+            --theme-glow: rgba(239, 68, 68, 0.5);
+            --theme-bg-ambient: rgba(69, 10, 10, 0.4);
+            --theme-text: #fca5a5;
+            --theme-border: rgba(239, 68, 68, 0.5);
+        }
+
+        body { font-family: 'Outfit', sans-serif; background-color: #020617; color: #e2e8f0; margin: 0; padding: 0; overflow-x: hidden; }
+        .font-tech { font-family: 'Rajdhani', sans-serif; }
+
+        /* --- Premium Dashboard UI Controls --- */
+        .custom-input { 
+            width: 100%; 
+            background: rgba(15, 23, 42, 0.4); 
+            backdrop-filter: blur(12px); 
+            border: 1px solid rgba(255,255,255,0.05); 
+            border-left: 3px solid rgba(255,255,255,0.1);
+            border-radius: 0.5rem; 
+            padding: 1rem; 
+            color: white; 
+            font-size: 0.95rem; 
+            outline: none; 
+            transition: all 0.3s ease; 
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.2); 
+        }
+        .custom-input:focus { 
+            border-color: rgba(255,255,255,0.1); 
+            border-left-color: var(--theme-primary); 
+            background: rgba(15, 23, 42, 0.7);
+            box-shadow: 0 0 20px var(--theme-glow), inset 0 2px 10px rgba(0,0,0,0.4); 
+        }
+        textarea.custom-input { resize: vertical; min-height: 120px; }
+
+        .type-btn { 
+            background: linear-gradient(180deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.6) 100%);
+            border: 1px solid rgba(255,255,255,0.05); 
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+            transition: all 0.3s; 
+            position: relative; 
+            overflow: hidden; 
+        }
+        .type-btn::before { content: ''; position: absolute; inset: 0; background: var(--theme-primary); opacity: 0; transition: 0.3s; }
+        .type-btn.selected { 
+            background: linear-gradient(180deg, rgba(30,41,59,0.4) 0%, rgba(15,23,42,0.8) 100%);
+            border-color: var(--theme-primary); 
+            box-shadow: 0 5px 20px var(--theme-glow), inset 0 1px 0 rgba(255,255,255,0.1); 
+            transform: translateY(-3px); 
+        }
+        .type-btn.selected::before { opacity: 0.15; }
+        .type-btn.selected span { color: var(--theme-primary); }
+
+        /* --- CARD STYLES --- */
+        .card-bg-base { background: #030712; }
+        .cyber-grid-ultra { background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 40px 40px; }
+        
+        /* 💎 Improved Holo-Glass Panel */
+        .holo-glass {
+            background: rgba(10, 15, 30, 0.65);
+            backdrop-filter: blur(25px) saturate(120%);
+            -webkit-backdrop-filter: blur(25px) saturate(120%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8), inset 0 1px 15px rgba(255,255,255,0.03);
+            position: relative;
+        }
+
+        /* 🔴 Flawless Round Logo Core */
+        .logo-core-container { position: relative; width: 140px; height: 140px; display: flex; align-items: center; justify-content: center; margin: 0 auto; }
+        .core-ring { position: absolute; inset: -10px; border-radius: 50%; border: 2px dashed var(--theme-border); opacity: 0.6; animation: spin 25s linear infinite; }
+        .core-ring-reverse { position: absolute; inset: -20px; border-radius: 50%; border: 1px solid var(--theme-primary); opacity: 0.3; animation: spin-reverse 35s linear infinite; }
+        .core-glow { position: absolute; inset: 10px; background: var(--theme-primary); filter: blur(35px); opacity: 0.4; border-radius: 50%; }
+        
+        .logo-mask { position: relative; width: 120px; height: 120px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.15); background: #020617; z-index: 10; overflow: hidden; box-shadow: inset 0 0 20px rgba(255,255,255,0.1), 0 0 40px var(--theme-glow); }
+        .logo-mask img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spin-reverse { 100% { transform: rotate(-360deg); } }
+
+        /* Advanced Typography */
+        .title-gradient { background: linear-gradient(to bottom, #ffffff, #94a3b8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .theme-text-gradient { background: linear-gradient(to right, var(--theme-text), #ffffff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        
+        /* Compact Footer */
+        .command-deck { position: relative; border-top: 1px solid rgba(255,255,255,0.05); }
+        .deck-line { position: absolute; top: 0; left: 15%; right: 15%; height: 1px; background: linear-gradient(90deg, transparent, var(--theme-primary), transparent); opacity: 0.8; box-shadow: 0 0 10px var(--theme-primary); }
+
+        /* Tools */
+        #preview-viewport { touch-action: none; user-select: none; cursor: grab; }
+        #preview-viewport:active { cursor: grabbing; }
+        input[type=range]::-webkit-slider-thumb { appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #fbbf24; cursor: pointer; }
+    </style>
+</head>
+<body class="selection:bg-amber-500 selection:text-white" data-theme="Announcement">
+
+    <!-- App Background -->
+    <div class="fixed inset-0 z-0 bg-[#020617] pointer-events-none"></div>
+    <div class="fixed top-[-20%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] bg-[var(--theme-glow)] blur-[250px] rounded-full pointer-events-none z-0 transition-colors duration-700"></div>
+
+    <main class="relative z-10 pt-10 pb-20 px-4 max-w-[800px] mx-auto min-h-screen">
+        
+        <!-- Header Logo -->
+        <div class="text-center mb-8">
+            <div class="inline-block p-1 rounded-2xl bg-gradient-to-br from-white/10 to-transparent mb-3">
+                <div class="w-14 h-14 bg-slate-900 border border-[var(--theme-primary)]/50 rounded-xl flex items-center justify-center shadow-[0_0_30px_var(--theme-glow)] transition-colors duration-500">
+                    <i data-lucide="zap" class="w-7 h-7 text-[var(--theme-primary)]"></i>
+                </div>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-black uppercase tracking-[0.2em] text-white">SLC Engine <span class="text-[var(--theme-primary)]">V3</span></h1>
+            <p class="text-[10px] sm:text-[11px] text-slate-400 font-bold uppercase tracking-[0.4em] mt-2">The Ultimate Notice Generator</p>
+        </div>
+
+        <!-- 💎 Enhanced Premium Dashboard Form 💎 -->
+        <div id="form-section" class="bg-gradient-to-br from-slate-900/60 to-slate-900/40 backdrop-blur-2xl rounded-3xl border border-white/10 p-6 sm:p-8 relative z-10 shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-7 overflow-hidden">
+            <!-- Top Cyber Glow Line -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[var(--theme-primary)] to-transparent opacity-60"></div>
+
+            <!-- Type Selector -->
+            <div>
+                <label class="text-[10px] font-bold text-slate-300 uppercase tracking-widest mb-3 flex items-center gap-2">
+                    <i data-lucide="layers" class="w-4 h-4 text-[var(--theme-primary)] opacity-80"></i> Select Module Type
+                </label>
+                <div class="grid grid-cols-3 gap-3 sm:gap-4" id="type-grid">
+                    <button onclick="changeTheme('Announcement', this)" class="type-btn selected rounded-2xl py-4 sm:py-5 flex flex-col items-center justify-center gap-2 group" data-type="Announcement">
+                        <i data-lucide="award" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-amber-400 transition-colors"></i>
+                        <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 truncate w-full px-1 text-center">Announcement</span>
+                    </button>
+                    <button onclick="changeTheme('News', this)" class="type-btn rounded-2xl py-4 sm:py-5 flex flex-col items-center justify-center gap-2 group" data-type="News">
+                        <i data-lucide="globe" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-cyan-400 transition-colors"></i>
+                        <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 truncate w-full px-1 text-center">News</span>
+                    </button>
+                    <button onclick="changeTheme('Alert', this)" class="type-btn rounded-2xl py-4 sm:py-5 flex flex-col items-center justify-center gap-2 group" data-type="Alert">
+                        <i data-lucide="alert-triangle" class="w-5 h-5 sm:w-6 sm:h-6 text-slate-400 group-hover:text-red-500 transition-colors"></i>
+                        <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-widest text-slate-400 truncate w-full px-1 text-center">Alert</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Inputs Area -->
+            <div class="space-y-5">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[var(--theme-primary)] opacity-80"></div> Headline
+                    </label>
+                    <input type="text" id="noticeTitle" placeholder="E.g. TOURNAMENT CHAMPIONS DECLARED" class="custom-input font-bold text-lg text-white">
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[var(--theme-primary)] opacity-80"></div> Body Details
+                    </label>
+                    <textarea id="noticeBody" placeholder="Enter the detailed information here..." class="custom-input leading-relaxed"></textarea>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                        <div class="w-1.5 h-1.5 rounded-full bg-[var(--theme-primary)] opacity-80"></div> Background Image (URL)
+                    </label>
+                    <input type="url" id="bgImage" placeholder="https://..." class="custom-input">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-[var(--theme-primary)] opacity-80"></div> Date
+                        </label>
+                        <input type="date" id="noticeDate" class="custom-input text-center">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <div class="w-1.5 h-1.5 rounded-full bg-[var(--theme-primary)] opacity-80"></div> Time
+                        </label>
+                        <input type="time" id="noticeTime" class="custom-input text-center">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Generate Button -->
+            <button onclick="generateNotice()" class="w-full py-4 mt-2 bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-secondary)] hover:brightness-110 text-slate-950 font-black uppercase tracking-[0.2em] text-sm rounded-xl shadow-[0_10px_30px_var(--theme-glow)] transition-all active:scale-[0.98] flex items-center justify-center gap-3 border border-white/20">
+                <i data-lucide="cpu" class="w-5 h-5"></i> Initialize Output Sequence
+            </button>
+        </div>
+    </main>
+
+    <!-- Fullscreen Render Modal -->
+    <div id="modal-preview" class="fixed inset-0 z-[200] bg-slate-950/98 backdrop-blur-3xl hidden flex flex-col">
+        
+        <!-- Top Toolbar -->
+        <div class="absolute top-0 w-full z-50 bg-slate-900/90 border-b border-white/5 p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="text-left hidden sm:block">
+                <p class="text-xs font-black text-[var(--theme-primary)] uppercase tracking-[0.3em]">Visual Render Engine</p>
+                <p class="text-[10px] text-slate-400 tracking-wider">Drag to reposition • Pinch to zoom</p>
+            </div>
+            
+            <div class="flex items-center gap-4 bg-slate-950/80 px-5 py-2.5 rounded-xl border border-white/10 flex-1 sm:flex-none justify-center">
+                <i data-lucide="image" class="w-4 h-4 text-slate-400"></i>
+                <span class="text-[10px] font-bold text-slate-300 uppercase tracking-widest">Image Offset</span>
+                <input type="range" id="imgPosSlider" min="0" max="100" value="50" class="w-32 h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer" oninput="updateImagePosition(this.value)">
+            </div>
+
+            <div class="flex items-center gap-2 justify-center w-full sm:w-auto">
+                <button onclick="zoomOut()" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 text-white transition-colors"><i data-lucide="minus" class="w-4 h-4"></i></button>
+                <button onclick="resetZoomPan()" class="px-5 py-2 bg-slate-800 rounded-full text-xs font-bold text-white hover:bg-slate-700 uppercase tracking-[0.2em] transition-colors">Reset</button>
+                <button onclick="zoomIn()" class="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center hover:bg-slate-700 text-white transition-colors"><i data-lucide="plus" class="w-4 h-4"></i></button>
+                <div class="w-px h-8 bg-white/10 mx-3"></div>
+                <button onclick="downloadCard()" class="px-6 py-2.5 bg-white text-black font-black text-[11px] uppercase tracking-[0.2em] rounded-full transition-all shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center gap-2 hover:bg-slate-200">
+                    <i data-lucide="download" class="w-4 h-4"></i> Save HD
+                </button>
+                <button onclick="closeModal()" class="w-10 h-10 bg-rose-500/10 text-rose-500 border border-rose-500/20 rounded-full flex items-center justify-center hover:bg-rose-500/20 ml-3 transition-colors"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+        </div>
+
+        <!-- Viewport -->
+        <div id="preview-viewport" class="flex-1 w-full relative overflow-hidden flex items-center justify-center mt-16">
+            <div id="transform-wrapper" class="relative transition-transform duration-75" style="transform: scale(0.4) translate(0px, 0px);">
+                
+                <!-- 💎 THE MASTERPIECE CARD (900x1200) 💎 -->
+                <div id="winner-card" class="w-[900px] h-[1200px] card-bg-base relative flex flex-col overflow-hidden border border-slate-800 shadow-[0_0_150px_rgba(0,0,0,1)]">
+                    
+                    <!-- LAYER 1: Backgrounds -->
+                    <div class="absolute inset-0 z-0">
+                        <img id="card-bg-img" src="" class="w-full h-full object-cover opacity-[0.2] mix-blend-screen hidden filter contrast-125" style="object-position: 50% 50%;" crossorigin="anonymous">
+                    </div>
+                    <div class="cyber-grid-ultra absolute inset-0 z-0 opacity-40"></div>
+                    
+                    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full text-center z-0 pointer-events-none">
+                        <h1 id="bg-hollow-text" class="text-[15rem] font-black uppercase tracking-tighter text-transparent opacity-[0.03] select-none" style="-webkit-text-stroke: 2px var(--theme-primary);">
+                            NOTICE
+                        </h1>
+                    </div>
+
+                    <!-- LAYER 2: HEADER (Flawless Round Logo Core) -->
+                    <div class="relative w-full pt-16 pb-6 flex flex-col items-center z-20">
+                        
+                        <div class="logo-core-container">
+                            <div class="core-ring"></div>
+                            <div class="core-ring-reverse"></div>
+                            <div class="core-glow"></div>
+                            
+                            <!-- Perfect Round Mask -->
+                            <div class="logo-mask">
+                                <img src="logo.png" alt="SLC Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\'><rect width=\'100\' height=\'100\' fill=\'%23020617\'/><text x=\'50\' y=\'50\' font-family=\'sans-serif\' font-size=\'14\' fill=\'%23ffffff\' text-anchor=\'middle\' dominant-baseline=\'middle\'>LOGO</text></svg>'">
+                            </div>
+                        </div>
+
+                        <!-- Organization Name -->
+                        <div class="text-center mt-6 relative z-20">
+                            <h2 class="text-[2.2rem] font-black uppercase tracking-[0.5em] title-gradient leading-none mb-2 drop-shadow-xl">
+                                SYNTHEX LEGION
+                            </h2>
+                            <div class="flex items-center justify-center gap-4">
+                                <div class="w-16 h-[1px] bg-gradient-to-r from-transparent to-[var(--theme-primary)]"></div>
+                                <h3 class="text-[1.6rem] font-tech font-bold uppercase tracking-[0.8em] text-[var(--theme-text)] drop-shadow-[0_0_15px_var(--theme-glow)]">
+                                    CHRONICLES
+                                </h3>
+                                <div class="w-16 h-[1px] bg-gradient-to-l from-transparent to-[var(--theme-primary)]"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LAYER 3: PROFESSIONAL NOTICE BODY -->
+                    <div class="relative w-full px-12 flex-1 flex flex-col pt-4 pb-8 z-20">
+                        
+                        <!-- Premium Glass Box -->
+                        <div class="holo-glass flex-1 rounded-[2rem] p-12 flex flex-col overflow-hidden group">
+                            
+                            <!-- 🎨 Transparent Artwork/Illustration (Geometric Shield) inside Body -->
+                            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-[0.05] text-[var(--theme-primary)] mix-blend-screen scale-150">
+                                <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" class="w-full h-full stroke-current">
+                                    <path d="M50 5 L90 25 L90 75 L50 95 L10 75 L10 25 Z" stroke-width="0.5" />
+                                    <path d="M50 15 L80 30 L80 70 L50 85 L20 70 L20 30 Z" stroke-width="0.2" />
+                                    <circle cx="50" cy="50" r="15" stroke-width="0.3" />
+                                    <circle cx="50" cy="50" r="5" fill="currentColor" opacity="0.5" />
+                                    <line x1="50" y1="0" x2="50" y2="100" stroke-width="0.1" />
+                                    <line x1="0" y1="50" x2="100" y2="50" stroke-width="0.1" />
+                                </svg>
+                            </div>
+
+                            <!-- Decorative Corners -->
+                            <div class="absolute top-0 left-0 w-16 h-16 border-t-[3px] border-l-[3px] border-[var(--theme-primary)] rounded-tl-[2rem] opacity-60 z-10"></div>
+                            <div class="absolute bottom-0 right-0 w-16 h-16 border-b-[3px] border-r-[3px] border-[var(--theme-primary)] rounded-br-[2rem] opacity-60 z-10"></div>
+
+                            <!-- Badges (Header of Box) -->
+                            <div class="flex justify-between items-center mb-8 border-b border-white/10 pb-6 relative z-10">
+                                <!-- Module Type -->
+                                <div class="bg-[var(--theme-primary)]/10 border border-[var(--theme-primary)]/50 px-6 py-2 rounded-full flex items-center gap-3 backdrop-blur-md">
+                                    <div class="w-2.5 h-2.5 bg-[var(--theme-primary)] rounded-full animate-pulse shadow-[0_0_10px_var(--theme-primary)]"></div>
+                                    <span id="card-type" class="text-xs font-black uppercase tracking-[0.4em] text-[var(--theme-text)]">
+                                        ANNOUNCEMENT
+                                    </span>
+                                </div>
+                                
+                                <!-- Date & Time -->
+                                <div class="flex gap-3 font-tech text-base">
+                                    <div class="flex items-center gap-2 text-slate-300 bg-[#020617]/80 px-4 py-1.5 rounded-lg border border-white/10">
+                                        <span class="text-[var(--theme-primary)] opacity-50">[</span>
+                                        <i data-lucide="calendar" class="w-3.5 h-3.5 text-[var(--theme-primary)]"></i>
+                                        <span id="card-date" class="font-semibold tracking-widest text-sm">DD MMM YYYY</span>
+                                        <span class="text-[var(--theme-primary)] opacity-50">]</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 text-slate-300 bg-[#020617]/80 px-4 py-1.5 rounded-lg border border-white/10">
+                                        <span class="text-[var(--theme-primary)] opacity-50">[</span>
+                                        <i data-lucide="clock" class="w-3.5 h-3.5 text-[var(--theme-primary)]"></i>
+                                        <span id="card-time" class="font-semibold tracking-widest text-sm">00:00 PM</span>
+                                        <span class="text-[var(--theme-primary)] opacity-50">]</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Content -->
+                            <div class="relative z-10 flex-1 flex flex-col">
+                                <h1 id="card-title" class="text-[2.8rem] font-black uppercase tracking-tight leading-[1.1] text-white drop-shadow-2xl mb-8">
+                                    NOTICE TITLE GOES HERE
+                                </h1>
+
+                                <div class="relative flex-1 pl-6">
+                                    <!-- Neon Accent Line -->
+                                    <div class="absolute left-0 top-0 bottom-0 w-[4px] bg-gradient-to-b from-[var(--theme-primary)] via-[var(--theme-primary)]/50 to-transparent rounded-full shadow-[0_0_15px_var(--theme-primary)]"></div>
+                                    
+                                    <!-- Dynamic Body Text -->
+                                    <div id="card-body" class="text-[1.3rem] font-medium text-slate-200 leading-[1.8] tracking-wide text-justify whitespace-pre-wrap overflow-hidden" style="text-shadow: 0 2px 10px rgba(0,0,0,0.8);">
+                                        This is the detailed body of the notice. Information goes here. Ensure your text is beautiful and easy to read.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- LAYER 4: COMPACT & CLEAR FOOTER -->
+                    <div class="relative w-full px-12 pb-10 pt-2 mt-auto z-30 command-deck">
+                        <div class="deck-line"></div>
+                        
+                        <div class="flex justify-between items-end w-full relative pt-6">
+                            
+                            <!-- 1. PRESIDENT (Left) -->
+                            <div class="flex-1 flex flex-col items-center">
+                                <h3 class="text-[13px] whitespace-nowrap font-bold text-slate-200 uppercase tracking-[0.2em] text-center drop-shadow-md mb-2">MERAZ BIN MIZANUR</h3>
+                                <div class="bg-[#020617] border border-[var(--theme-primary)]/40 px-4 py-1.5 rounded shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                                    <p class="text-[9px] whitespace-nowrap text-[var(--theme-text)] font-tech font-bold uppercase tracking-[0.3em]">President</p>
+                                </div>
+                            </div>
+
+                            <!-- 2. CHAIRMAN & CEO (Center - Prominent & Single Line) -->
+                            <div class="flex-[1.2] flex flex-col items-center relative z-20">
+                                <!-- Glow effect behind name -->
+                                <div class="absolute inset-0 bg-[radial-gradient(ellipse,_var(--theme-glow)_0%,_transparent_70%)] blur-xl pointer-events-none -z-10"></div>
+                                
+                                <div class="mb-1 text-[var(--theme-primary)]">
+                                    <i data-lucide="crown" class="w-5 h-5 drop-shadow-[0_0_10px_var(--theme-primary)]"></i>
+                                </div>
+                                <h3 class="text-[1.3rem] whitespace-nowrap font-black theme-text-gradient uppercase tracking-[0.15em] drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)] leading-none mb-2.5">
+                                    ABDULLAH AL JUBAYER
+                                </h3>
+                                <!-- Highlighted Title Box -->
+                                <div class="bg-[var(--theme-primary)] px-6 py-1.5 rounded shadow-[0_0_20px_var(--theme-glow)]">
+                                    <p class="text-[10px] whitespace-nowrap text-slate-950 font-black uppercase tracking-[0.4em]">
+                                        Chairman & CEO
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- 3. VICE-PRESIDENT (Right) -->
+                            <div class="flex-1 flex flex-col items-center">
+                                <h3 class="text-[13px] whitespace-nowrap font-bold text-slate-200 uppercase tracking-[0.2em] text-center drop-shadow-md mb-2">NAIM RONI</h3>
+                                <div class="bg-[#020617] border border-[var(--theme-primary)]/40 px-4 py-1.5 rounded shadow-[0_0_15px_rgba(0,0,0,0.5)]">
+                                    <p class="text-[9px] whitespace-nowrap text-[var(--theme-text)] font-tech font-bold uppercase tracking-[0.3em]">Vice-President</p>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- END CARD -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        let currentTheme = "Announcement";
+        let scale = 0.55, translateX = 0, translateY = 0, isDragging = false, startX, startY;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            initPanZoom();
+            const now = new Date();
+            document.getElementById('noticeDate').value = now.toISOString().split('T')[0];
+            document.getElementById('noticeTime').value = now.toTimeString().slice(0,5);
+        });
+
+        // Theme Switcher
+        function changeTheme(theme, btnEl) {
+            currentTheme = theme;
+            document.body.setAttribute('data-theme', theme);
+            document.querySelectorAll('.type-btn').forEach(btn => btn.classList.remove('selected'));
+            btnEl.classList.add('selected');
+        }
+
+        // Image Alignment Slider
+        function updateImagePosition(value) {
+            document.getElementById('card-bg-img').style.objectPosition = `50% ${value}%`;
+        }
+
+        function generateNotice() {
+            const title = document.getElementById('noticeTitle').value.trim();
+            let body = document.getElementById('noticeBody').value.trim();
+            const bgImage = document.getElementById('bgImage').value.trim();
+            const dateVal = document.getElementById('noticeDate').value;
+            const timeVal = document.getElementById('noticeTime').value;
+
+            if (!title || !body) { alert("ERROR: Please input Headline and Body Details to proceed."); return; }
+
+            // Dynamic Font Sizing for Title
+            const titleEl = document.getElementById('card-title');
+            if(title.length > 35) titleEl.classList.replace('text-[2.8rem]', 'text-[2.2rem]');
+            else titleEl.classList.replace('text-[2.2rem]', 'text-[2.8rem]');
+
+            // Inject Text Data
+            titleEl.innerText = title;
+            document.getElementById('card-body').innerText = body;
+            document.getElementById('card-type').innerText = currentTheme;
+            document.getElementById('bg-hollow-text').innerText = currentTheme;
+
+            // DateTime Formatting
+            if(dateVal) {
+                const d = new Date(dateVal);
+                document.getElementById('card-date').innerText = d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }).toUpperCase();
+            }
+            if(timeVal) {
+                let [h, m] = timeVal.split(':');
+                let ampm = h >= 12 ? 'PM' : 'AM';
+                h = h % 12 || 12; 
+                document.getElementById('card-time').innerText = `${h}:${m} ${ampm}`;
+            }
+
+            // Image Setup
+            const imgEl = document.getElementById('card-bg-img');
+            if(bgImage) { imgEl.src = bgImage; imgEl.classList.remove('hidden'); } 
+            else { imgEl.classList.add('hidden'); }
+            
+            document.getElementById('imgPosSlider').value = 50; updateImagePosition(50);
+            
+            // Show UI Modal
+            document.getElementById('modal-preview').classList.remove('hidden');
+            scale = window.innerHeight < 800 ? 0.45 : (window.innerHeight < 1000 ? 0.55 : 0.7);
+            translateX = 0; translateY = 0; updateTransform();
+
+            // VFX
+            const colors = {
+                'Announcement':['#fbbf24', '#f59e0b', '#ffffff'],
+                'News':['#06b6d4', '#0ea5e9', '#ffffff'],
+                'Alert':['#ef4444', '#dc2626', '#ffffff']
+            };
+            setTimeout(() => { confetti({ particleCount: 150, spread: 90, origin: { y: 0.6 }, colors: colors[currentTheme] }); }, 300);
+        }
+
+        function closeModal() { document.getElementById('modal-preview').classList.add('hidden'); }
+
+        function downloadCard() {
+            const card = document.getElementById('winner-card');
+            const btn = event.currentTarget;
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> PROCESSING...`;
+            lucide.createIcons();
+
+            setTimeout(() => {
+                html2canvas(card, { scale: 2, useCORS: true, backgroundColor: '#020617', logging: false }).then(canvas => {
+                    const link = document.createElement('a');
+                    link.download = `SLC_${currentTheme.toUpperCase()}_${new Date().getTime()}.png`;
+                    link.href = canvas.toDataURL('image/png', 1.0);
+                    link.click();
+                    btn.innerHTML = originalHTML; lucide.createIcons();
+                }).catch(err => {
+                    alert("Rendering Failed. Please try again.");
+                    btn.innerHTML = originalHTML; lucide.createIcons();
+                });
+            }, 300);
+        }
+
+        // Mouse & Touch Pan/Zoom
+        function updateTransform() { document.getElementById('transform-wrapper').style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`; }
+        function zoomIn() { scale += 0.1; updateTransform(); }
+        function zoomOut() { if (scale > 0.2) scale -= 0.1; updateTransform(); }
+        function resetZoomPan() { scale = window.innerHeight < 800 ? 0.45 : 0.55; translateX = 0; translateY = 0; updateTransform(); }
+
+        function initPanZoom() {
+            const vp = document.getElementById('preview-viewport');
+            vp.addEventListener('mousedown', (e) => { isDragging = true; startX = e.clientX - (translateX * scale); startY = e.clientY - (translateY * scale); });
+            window.addEventListener('mousemove', (e) => { if (!isDragging) return; translateX = (e.clientX - startX) / scale; translateY = (e.clientY - startY) / scale; updateTransform(); });
+            window.addEventListener('mouseup', () => { isDragging = false; });
+            vp.addEventListener('touchstart', (e) => { if (e.touches.length === 1) { isDragging = true; startX = e.touches[0].clientX - (translateX * scale); startY = e.touches[0].clientY - (translateY * scale); } }, {passive: false});
+            window.addEventListener('touchmove', (e) => { if (!isDragging || e.touches.length !== 1) return; if(e.target === vp || vp.contains(e.target)) e.preventDefault(); translateX = (e.touches[0].clientX - startX) / scale; translateY = (e.touches[0].clientY - startY) / scale; updateTransform(); }, {passive: false});
+            window.addEventListener('touchend', () => { isDragging = false; });
+        }
+    </script>
+</body>
+</html>
