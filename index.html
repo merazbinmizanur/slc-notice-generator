@@ -254,7 +254,7 @@
                     
                     <!-- LAYER 1: Backgrounds -->
                     <div class="absolute inset-0 z-0">
-                        <img id="card-bg-img" src="" class="w-full h-full object-cover opacity-[0.2] mix-blend-screen hidden filter contrast-125" style="object-position: 50% 50%;" crossorigin="anonymous">
+                         <img id="card-bg-img" class="w-full h-full object-cover opacity-[0.2] mix-blend-screen hidden filter contrast-125" style="object-position: 50% 50%;" crossorigin="anonymous">
                     </div>
                     <div class="cyber-grid-ultra absolute inset-0 z-0 opacity-40"></div>
                     
@@ -469,9 +469,16 @@
             }
 
             // Image Setup
-            const imgEl = document.getElementById('card-bg-img');
-            if(bgImage) { imgEl.src = bgImage; imgEl.classList.remove('hidden'); } 
-            else { imgEl.classList.add('hidden'); }
+            // Image Setup
+const imgEl = document.getElementById('card-bg-img');
+if(bgImage) { 
+    imgEl.src = bgImage; 
+    imgEl.classList.remove('hidden'); 
+} 
+else { 
+    imgEl.removeAttribute('src'); // এই লাইনটি html2canvas-এর ক্র্যাশ ঠেকাবে
+    imgEl.classList.add('hidden'); 
+}
             
             document.getElementById('imgPosSlider').value = 50; updateImagePosition(50);
             
